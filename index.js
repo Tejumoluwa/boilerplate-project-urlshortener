@@ -29,7 +29,6 @@ const findUrl = (url) => {
 
 app.post('/api/shorturl', (req, res) => {
   let longUrl = req.body.url;
-
   dns.lookup(new URL(longUrl).hostname, (err, address) => {
     if (err){
       res.json({ error: 'invalid url' });
@@ -38,6 +37,7 @@ app.post('/api/shorturl', (req, res) => {
       if (!existing) {
         const shortUrl = urlDatabase.length + 1;
         urlDatabase.push({ original_url: longUrl, short_url: shortUrl });
+        res.json({ original_url: longUrl, short_url: shortUrl });
     } else {
       res.json(existing);
   }}})
