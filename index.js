@@ -36,6 +36,7 @@ app.post('/api/shorturl', (req, res) => {
     } else {
       const existing = findUrl(longUrl);
       if (!existing) {
+        const shortUrl = urlDatabase.length + 1;
         urlDatabase.push({ original_url: longUrl, short_url: shortUrl });
     } else {
       res.json(existing);
