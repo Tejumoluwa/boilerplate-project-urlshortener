@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
-
+const dns = require('dns');
+const url = require('url');
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
@@ -23,26 +24,29 @@ app.get('/api/hello', function(req, res) {
 });
 
 const findUrl = (url) => {
-  return urlDatabase.find(item => item.shortUrl === parseInt(url) || item.longUrl === url);
+  return urlDatabase.find(item => item.short_url === parseInt(url) || item.original_url === url);
 }
 
 app.post('/api/shorturl', (req, res) => {
   let longUrl = req.body.url;
-  let shortUrl = urlDatabase.length + 1;
-  const existing = findUrl(longUrl);
-  if (!existing) {
-    urlDatabase.push({ longUrl: longUrl, shortUrl: shortUrl });
-    res.json(urlDatabase[urlDatabase.length - 1]);
-  } else {
-    res.json( existing);
-  }
+
+  dns.lookup(new URL(longUrl).hostname, (err, address) => {
+    if (err){
+      res.json({ error: 'invalid url' });
+    } else {
+      const existing = findUrl(longUrl);
+      if (!existing) {
+        urlDatabase.push({ original_url: longUrl, short_url: shortUrl });
+    } else {
+      res.json(existing);
+  }}})
 })
 
-app.get('/api/shorturl/:shortUrl', (req, res) => {
-  const reqshortUrl = req.params.shortUrl;
+app.get('/api/shorturl/:short_url', (req, res) => {
+  const reqshortUrl = req.params.short_url;
   const originalUrl = findUrl(reqshortUrl);
   if (originalUrl){
-    res.redirect(originalUrl.longUrl);
+    res.redirect(originalUrl.original_url);
   }else{
     res.json({error: "Short URL not found"});
   }
